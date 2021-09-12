@@ -1,13 +1,14 @@
 import {
   EvaluationApi,
-  EvalContext,
   EvaluationBatchRequest,
   EvaluationBatchRequestFlagTagsOperatorEnum,
   EvaluationEntity,
-} from "flagr-typescript";
+  createConfiguration,
+  ServerConfiguration,
+} from "flagr-client";
 
 export interface FlagCallbacks {
-  [key: string]: Function;
+  [key: string]: (...args: any) => Promise<any>;
 }
 
 export interface Variant {
@@ -21,51 +22,70 @@ const nullVariant: Variant = {
 };
 
 export interface Config {
-  tags: string[];
-  tagOperator: EvaluationBatchRequestFlagTagsOperatorEnum;
+  flagrUrl: string;
+  tags?: string[];
+  tagOperator?: EvaluationBatchRequestFlagTagsOperatorEnum;
+}
+
+export function createFeature(config: Config) {
+  return new Feature(config);
 }
 
 export class Feature {
-  private _context: Array<any> = [];
+  private _context: Object = {};
   private _evaluationResults: Map<string, Variant> = new Map();
-  constructor(private _api: EvaluationApi, private _config: Config) {}
+  private _api: EvaluationApi;
 
-  setContext(context: EvalContext[]) {
+  constructor(private _config: Config) {
+    this._api = new EvaluationApi(
+      createConfiguration({
+        baseServer: new ServerConfiguration<{}>(
+          `${this._config.flagrUrl}/api/v1`,
+          {}
+        ),
+      })
+    );
+  }
+
+  setContext(context: Object) {
     this._context = context;
     this._evaluationResults = new Map();
   }
 
-  addContext(context: EvalContext) {
-    this.setContext([...this._context, context]);
+  addContext(context: Object) {
+    this.setContext({ ...this._context, context });
   }
 
-  async match(flag: string) {
-    let match = false;
-    await this.evaluate(flag, { flag: () => (match = true) });
-    return match;
+  async match(flag: string, matchVariant: string = "on") {
+    const callbacks = { otherwise: async () => false };
+    callbacks[matchVariant] = async () => true;
+    return await this.evaluate(flag, callbacks);
   }
 
   async evaluate(flag: string, callbacks: FlagCallbacks) {
     const { key, attachment } = await this.performEvaluation(flag);
     const callback =
-      callbacks[flag] ||
+      callbacks[key] ||
       callbacks["otherwise"] ||
-      function (attachment: any) {
-        return false;
+      async function () {
+        return undefined;
       };
 
-    callback(attachment);
+    return await callback(attachment);
   }
 
   async performEvaluation(flag: string) {
     if (!this._evaluationResults.has(flag)) {
       const evaluationBatchRequest = new EvaluationBatchRequest();
       const evaluationEntity = new EvaluationEntity();
+
       evaluationEntity.entityContext = this._context;
       evaluationBatchRequest.entities = [evaluationEntity];
-      if (this._config.tags.length) {
+
+      if (this._config.tags?.length) {
         evaluationBatchRequest.flagTags = this._config.tags;
-        evaluationBatchRequest.flagTagsOperator = this._config.tagOperator;
+        evaluationBatchRequest.flagTagsOperator =
+          this._config.tagOperator || "ANY";
       } else {
         evaluationBatchRequest.flagKeys = [flag];
       }
@@ -75,7 +95,7 @@ export class Feature {
       );
 
       evaluationResult.evaluationResults.forEach((value) =>
-        this._evaluationResults.set(value.variantKey, {
+        this._evaluationResults.set(value.flagKey, {
           key: value.variantKey,
           attachment: value.variantAttachment,
         })
