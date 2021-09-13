@@ -1,5 +1,5 @@
 import { Feature } from "../src/feature";
-import { featureFlag, createFlag, randomString } from "./feature.helper";
+import { featureFlag, createFlag, randomString, sleep } from "./feature.helper";
 
 it("should be defined", () => {
   const feature = featureFlag();
@@ -9,6 +9,7 @@ it("should be defined", () => {
 
 it("should evaluate to on", async () => {
   const { flag } = await createFlag();
+  await sleep(3000);
   const on = await featureFlag().evaluate<boolean>(flag.key, {
     on: async () => {
       return true;

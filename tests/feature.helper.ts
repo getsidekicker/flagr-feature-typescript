@@ -35,7 +35,7 @@ export const randomString = () =>
     .toString(36)
     .replace(/[^a-z0-9]+/g, "");
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const createFlag = async (tags: string[] = []) => {
   const flagApi = new FlagApi(configuration);
@@ -71,9 +71,6 @@ export const createFlag = async (tags: string[] = []) => {
     segment.id,
     distributionRequest
   );
-
-  //Need to wait for flags to become available
-  await sleep(2000);
 
   return {
     flag,

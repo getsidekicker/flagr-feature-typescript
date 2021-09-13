@@ -60,10 +60,6 @@ export class Feature {
     this.evaluationResults = new Map();
   }
 
-  addContext(context: JsonObject) {
-    this.setContext({ ...this.context, ...context });
-  }
-
   async match(flag: string, matchVariant: string = "on") {
     const callbacks = { otherwise: async () => false };
     callbacks[matchVariant] = async () => true;
