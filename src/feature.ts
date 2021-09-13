@@ -11,11 +11,11 @@ export interface FlagCallbacks<T> {
   [key: string]: (attachment?: JsonObject) => T | Promise<T>;
 }
 
-declare type Json = string | number | boolean | null | JsonArray | JsonObject;
+type Json = string | number | boolean | null | JsonArray | JsonObject;
 
-declare type JsonArray = Array<Json>;
+type JsonArray = Array<Json>;
 
-declare type JsonObject = {
+type JsonObject = {
   [key: string]: Json;
 };
 
