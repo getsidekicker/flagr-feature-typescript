@@ -11,9 +11,17 @@ export interface FlagCallbacks {
   [key: string]: (...args: any) => Promise<any>;
 }
 
+declare type Json = string | number | boolean | null | JsonArray | JsonObject;
+
+declare type JsonArray = Array<Json>;
+
+declare type JsonObject = {
+  [key: string]: Json;
+};
+
 export interface Variant {
   key: string | null;
-  attachment: any | null;
+  attachment: Json | null;
 }
 
 const nullVariant: Variant = {
@@ -32,7 +40,7 @@ export function createFeature(config: Config) {
 }
 
 export class Feature {
-  private context: Object = {};
+  private context: JsonObject = {};
   private evaluationResults: Map<string, Variant> = new Map();
   private api: EvaluationApi;
 
@@ -47,13 +55,13 @@ export class Feature {
     );
   }
 
-  setContext(context: Object) {
+  setContext(context: JsonObject) {
     this.context = context;
     this.evaluationResults = new Map();
   }
 
-  addContext(context: Object) {
-    this.setContext({ ...this.context, context });
+  addContext(context: JsonObject) {
+    this.setContext({ ...this.context, ...context });
   }
 
   async match(flag: string, matchVariant: string = "on") {
