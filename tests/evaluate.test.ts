@@ -8,7 +8,7 @@ it("should be defined", () => {
 
 it("should evaluate to on", async () => {
   const { flag } = await createFlag();
-  const on = await featureFlag().evaluate(flag.key, {
+  const on = await featureFlag().evaluate<boolean>(flag.key, {
     on: async () => {
       return true;
     },
@@ -17,7 +17,7 @@ it("should evaluate to on", async () => {
 });
 
 it("should evaluate to otherwise", async () => {
-  const otherwise = await featureFlag().evaluate(randomString(), {
+  const otherwise = await featureFlag().evaluate<boolean>(randomString(), {
     otherwise: async () => {
       return true;
     },

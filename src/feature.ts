@@ -44,11 +44,11 @@ export class Feature {
   private evaluationResults: Map<string, Variant> = new Map();
   private api: EvaluationApi;
 
-  constructor(private _config: Config) {
+  constructor(private config: Config) {
     this.api = new EvaluationApi(
       createConfiguration({
         baseServer: new ServerConfiguration<{}>(
-          `${this._config.flagrUrl}/api/v1`,
+          `${this.config.flagrUrl}/api/v1`,
           {}
         ),
       })
@@ -65,12 +65,12 @@ export class Feature {
   }
 
   async match(flag: string, matchVariant: string = "on") {
-    const callbacks: FlagCallbacks<boolean> = { otherwise: async () => false };
+    const callbacks = { otherwise: async () => false };
     callbacks[matchVariant] = async () => true;
-    return this.evaluate(flag, callbacks);
+    return this.evaluate<boolean>(flag, callbacks);
   }
 
-  async evaluate(flag: string, callbacks: FlagCallbacks<any>) {
+  async evaluate<T>(flag: string, callbacks: FlagCallbacks<T>) {
     const { key, attachment } = await this.performEvaluation(flag);
     const callback =
       callbacks[key] || callbacks["otherwise"] || (() => undefined);
@@ -86,10 +86,10 @@ export class Feature {
       evaluationEntity.entityContext = this.context;
       evaluationBatchRequest.entities = [evaluationEntity];
 
-      if (this._config.tags?.length) {
-        evaluationBatchRequest.flagTags = this._config.tags;
+      if (this.config.tags?.length) {
+        evaluationBatchRequest.flagTags = this.config.tags;
         evaluationBatchRequest.flagTagsOperator =
-          this._config.tagOperator || "ANY";
+          this.config.tagOperator || "ANY";
       } else {
         evaluationBatchRequest.flagKeys = [flag];
       }
