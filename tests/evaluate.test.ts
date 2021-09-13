@@ -2,8 +2,9 @@ import { Feature } from "../src/feature";
 import { featureFlag, createFlag, randomString } from "./feature.helper";
 
 it("should be defined", () => {
-  expect(featureFlag).toBeDefined();
-  expect(featureFlag).toBeInstanceOf(Feature);
+  const feature = featureFlag();
+  expect(feature).toBeDefined();
+  expect(feature).toBeInstanceOf(Feature);
 });
 
 it("should evaluate to on", async () => {

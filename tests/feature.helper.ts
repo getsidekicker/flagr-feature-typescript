@@ -1,4 +1,4 @@
-import { EvaluationBatchRequestFlagTagsOperatorEnum } from "flagr-typescript";
+import { EvaluationBatchRequestFlagTagsOperatorEnum } from "flagr-client";
 import {
   createConfiguration,
   CreateFlagRequest,
