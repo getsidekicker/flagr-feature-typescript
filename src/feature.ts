@@ -7,8 +7,8 @@ import {
   ServerConfiguration,
 } from "flagr-client";
 
-export interface FlagCallbacks {
-  [key: string]: (...args: any) => Promise<any>;
+export interface FlagCallbacks<T> {
+  [key: string]: (attachment?: JsonObject) => T | Promise<T>;
 }
 
 declare type Json = string | number | boolean | null | JsonArray | JsonObject;
@@ -21,7 +21,7 @@ declare type JsonObject = {
 
 export interface Variant {
   key: string | null;
-  attachment: Json | null;
+  attachment: JsonObject | null;
 }
 
 const nullVariant: Variant = {
@@ -65,21 +65,17 @@ export class Feature {
   }
 
   async match(flag: string, matchVariant: string = "on") {
-    const callbacks = { otherwise: async () => false };
+    const callbacks: FlagCallbacks<boolean> = { otherwise: async () => false };
     callbacks[matchVariant] = async () => true;
-    return await this.evaluate(flag, callbacks);
+    return this.evaluate(flag, callbacks);
   }
 
-  async evaluate(flag: string, callbacks: FlagCallbacks) {
+  async evaluate(flag: string, callbacks: FlagCallbacks<any>) {
     const { key, attachment } = await this.performEvaluation(flag);
     const callback =
-      callbacks[key] ||
-      callbacks["otherwise"] ||
-      async function () {
-        return undefined;
-      };
+      callbacks[key] || callbacks["otherwise"] || (() => undefined);
 
-    return await callback(attachment);
+    return callback(attachment);
   }
 
   async performEvaluation(flag: string) {
