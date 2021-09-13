@@ -32,12 +32,12 @@ export function createFeature(config: Config) {
 }
 
 export class Feature {
-  private _context: Object = {};
-  private _evaluationResults: Map<string, Variant> = new Map();
-  private _api: EvaluationApi;
+  private context: Object = {};
+  private evaluationResults: Map<string, Variant> = new Map();
+  private api: EvaluationApi;
 
   constructor(private _config: Config) {
-    this._api = new EvaluationApi(
+    this.api = new EvaluationApi(
       createConfiguration({
         baseServer: new ServerConfiguration<{}>(
           `${this._config.flagrUrl}/api/v1`,
@@ -48,12 +48,12 @@ export class Feature {
   }
 
   setContext(context: Object) {
-    this._context = context;
-    this._evaluationResults = new Map();
+    this.context = context;
+    this.evaluationResults = new Map();
   }
 
   addContext(context: Object) {
-    this.setContext({ ...this._context, context });
+    this.setContext({ ...this.context, context });
   }
 
   async match(flag: string, matchVariant: string = "on") {
@@ -75,11 +75,11 @@ export class Feature {
   }
 
   async performEvaluation(flag: string) {
-    if (!this._evaluationResults.has(flag)) {
+    if (!this.evaluationResults.has(flag)) {
       const evaluationBatchRequest = new EvaluationBatchRequest();
       const evaluationEntity = new EvaluationEntity();
 
-      evaluationEntity.entityContext = this._context;
+      evaluationEntity.entityContext = this.context;
       evaluationBatchRequest.entities = [evaluationEntity];
 
       if (this._config.tags?.length) {
@@ -90,23 +90,23 @@ export class Feature {
         evaluationBatchRequest.flagKeys = [flag];
       }
 
-      const evaluationResult = await this._api.postEvaluationBatch(
+      const evaluationResult = await this.api.postEvaluationBatch(
         evaluationBatchRequest
       );
 
       evaluationResult.evaluationResults.forEach((value) =>
-        this._evaluationResults.set(value.flagKey, {
+        this.evaluationResults.set(value.flagKey, {
           key: value.variantKey,
           attachment: value.variantAttachment,
         })
       );
     }
 
-    this._evaluationResults.set(
+    this.evaluationResults.set(
       flag,
-      this._evaluationResults.get(flag) || nullVariant
+      this.evaluationResults.get(flag) || nullVariant
     );
 
-    return this._evaluationResults.get(flag);
+    return this.evaluationResults.get(flag);
   }
 }
