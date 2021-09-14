@@ -18,10 +18,7 @@ import {
 import { createEvaluator } from '../src/evaluator';
 import { createFeature } from '../src/feature';
 
-const baseServer = new ServerConfiguration<{}>(
-  'http://localhost:18000/api/v1',
-  {}
-);
+const baseServer = new ServerConfiguration<{}>('http://flagr:18000/api/v1', {});
 const configuration = createConfiguration({ baseServer });
 
 interface PartialConfig {
@@ -30,10 +27,10 @@ interface PartialConfig {
 }
 
 export const testCreateEvaluator = (config?: PartialConfig) =>
-  createEvaluator({ ...(config || {}), flagrUrl: 'http://localhost:18000' });
+  createEvaluator({ ...(config || {}), flagrUrl: 'http://flagr:18000' });
 
 export const testCreateFeature = (config?: PartialConfig) =>
-  createFeature({ ...(config || {}), flagrUrl: 'http://localhost:18000' });
+  createFeature({ ...(config || {}), flagrUrl: 'http://flagr:18000' });
 
 export const randomString = () =>
   Math.random()
