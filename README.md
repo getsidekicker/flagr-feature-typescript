@@ -31,7 +31,7 @@ const matchOff = feature.match('flag2', 'off'); // true evaluated variant is 'of
 
 ## Synchronous usage
 
-In the event that you can't use a promises (such as within React components), you can directly use the evaluator.
+In the event that you can't use promises (such as within React components), you can directly use the evaluator.
 
 ```typescript
 // Invoked in a global context
@@ -48,7 +48,7 @@ const { cachedMatch, cachedEvaluation } = await evaluator.batchEvaluation({
 const isOn = cachedMatch('flag1');
 ```
 
-NB: All flags are prefetched via the evaluator. This requires you to either supply the superset flags required via either `keys` or `tags`
+NB: All flags are prefetched via the evaluator. This requires you to supply the superset flags required via either `keys` or `tags`
 
 ## Context
 
