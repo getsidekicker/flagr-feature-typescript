@@ -10,3 +10,5 @@ RUN curl -s -f -L -o await https://github.com/betalo-sweden/await/releases/downl
     mv await /usr/local/bin/await
 
 COPY ops/docker/docker-entrypoint.sh /usr/local/bin/
+
+CMD [ "/usr/local/bin/npm", "run",  "test" ]

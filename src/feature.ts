@@ -1,112 +1,59 @@
+import Evaluator from './evaluator';
 import {
-  EvaluationApi,
-  EvaluationBatchRequest,
-  EvaluationBatchRequestFlagTagsOperatorEnum,
-  EvaluationEntity,
-  createConfiguration,
-  ServerConfiguration,
-} from "flagr-client";
-
-export interface FlagCallbacks<T> {
-  [key: string]: (attachment?: JsonObject) => T | Promise<T>;
-}
-
-type Json = string | number | boolean | null | JsonArray | JsonObject;
-
-type JsonArray = Array<Json>;
-
-type JsonObject = {
-  [key: string]: Json;
-};
-
-export interface Variant {
-  key: string | null;
-  attachment: JsonObject | null;
-}
-
-const nullVariant: Variant = {
-  key: null,
-  attachment: null,
-};
-
-export interface Config {
-  flagrUrl: string;
-  tags?: string[];
-  tagOperator?: EvaluationBatchRequestFlagTagsOperatorEnum;
-}
-
-export function createFeature(config: Config) {
-  return new Feature(config);
-}
+  Config,
+  FlagCallbacks,
+  Flags,
+  FlagVariant,
+  JsonObject,
+  Tags,
+} from './types';
 
 export class Feature {
   private context: JsonObject = {};
-  private evaluationResults: Map<string, Variant> = new Map();
-  private api: EvaluationApi;
 
-  constructor(private config: Config) {
-    this.api = new EvaluationApi(
-      createConfiguration({
-        baseServer: new ServerConfiguration<{}>(
-          `${this.config.flagrUrl}/api/v1`,
-          {}
-        ),
-      })
-    );
-  }
+  private results = new Map<string, FlagVariant>();
+
+  private cachedMatch: (flag: string, matchVariant: string) => boolean;
+
+  private cachedEvaluate: <T>(flag: string, callbacks: FlagCallbacks<T>) => T;
+
+  constructor(private evaluator: Evaluator) {}
 
   setContext(context: JsonObject) {
     this.context = context;
-    this.evaluationResults = new Map();
+    this.results = new Map<string, FlagVariant>();
   }
 
-  async match(flag: string, matchVariant: string = "on") {
-    const callbacks = { otherwise: async () => false };
-    callbacks[matchVariant] = async () => true;
-    return this.evaluate<boolean>(flag, callbacks);
+  async match(flag: string, matchVariant: string = 'on') {
+    const { cachedMatch } = await this.performEvaluation(flag);
+    return cachedMatch(flag, matchVariant);
   }
 
   async evaluate<T>(flag: string, callbacks: FlagCallbacks<T>) {
-    const { key, attachment } = await this.performEvaluation(flag);
-    const callback =
-      callbacks[key] || callbacks["otherwise"] || (() => undefined);
-
-    return callback(attachment);
+    const { cachedEvaluate } = await this.performEvaluation(flag);
+    return cachedEvaluate(flag, callbacks);
   }
 
-  async performEvaluation(flag: string) {
-    if (!this.evaluationResults.has(flag)) {
-      const evaluationBatchRequest = new EvaluationBatchRequest();
-      const evaluationEntity = new EvaluationEntity();
-
-      evaluationEntity.entityContext = this.context;
-      evaluationBatchRequest.entities = [evaluationEntity];
-
-      if (this.config.tags?.length) {
-        evaluationBatchRequest.flagTags = this.config.tags;
-        evaluationBatchRequest.flagTagsOperator =
-          this.config.tagOperator || "ANY";
-      } else {
-        evaluationBatchRequest.flagKeys = [flag];
-      }
-
-      const evaluationResult = await this.api.postEvaluationBatch(
-        evaluationBatchRequest
-      );
-
-      evaluationResult.evaluationResults.forEach((value) =>
-        this.evaluationResults.set(value.flagKey, {
-          key: value.variantKey,
-          attachment: value.variantAttachment,
+  private async performEvaluation(flag: string) {
+    if (!this.results.has(flag)) {
+      const { tags, tagOperator } = this.evaluator.config;
+      Object.assign(
+        this,
+        await this.evaluator.wrappedBatchEvaluation({
+          context: this.context,
+          input: tags?.length
+            ? <Tags>{ tags, tagOperator: tagOperator || 'ANY' }
+            : <Flags>{ flags: [flag] },
         })
       );
     }
-
-    this.evaluationResults.set(
-      flag,
-      this.evaluationResults.get(flag) || nullVariant
-    );
-
-    return this.evaluationResults.get(flag);
+    return {
+      cachedMatch: this.cachedMatch,
+      cachedEvaluate: this.cachedEvaluate,
+    };
   }
+}
+
+export function createFeature(config: Config) {
+  return new Feature(new Evaluator(config));
 }

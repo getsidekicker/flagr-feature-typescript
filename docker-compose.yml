@@ -21,8 +21,6 @@ services:
     environment:
       FLAGR_DB_DBDRIVER: mysql
       FLAGR_DB_DBCONNECTIONSTR: flagr:flagr@tcp(db:3306)/flagr?parseTime=true
-    ports:
-      - "18000:18000"
     depends_on:
       - db
 
