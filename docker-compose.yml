@@ -1,4 +1,4 @@
-version: "3.2"
+version: '3.2'
 
 ## Overlay for running tests in Buildkite
 services:
@@ -8,8 +8,8 @@ services:
       context: .
       dockerfile: ops/docker/Dockerfile
     environment:
-      FEATURE_FLAGR_URL: "http://flagr:18000"
-      DB_HOST: "db"
+      FEATURE_FLAGR_URL: 'http://flagr:18000'
+      DB_HOST: 'db'
     volumes:
       - .:/app:cached
     depends_on:
@@ -23,6 +23,8 @@ services:
       FLAGR_DB_DBCONNECTIONSTR: flagr:flagr@tcp(db:3306)/flagr?parseTime=true
     depends_on:
       - db
+    ports:
+      - 18000:18000
 
   db:
     image: mysql:8.0

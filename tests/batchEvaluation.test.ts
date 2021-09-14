@@ -37,12 +37,12 @@ it('should be cached', async () => {
   const tags: NonEmptyArray<string> = [randomString()];
   const { flag } = await createFlag(tags);
   await sleep(3000);
-  const { flag: flag2 } = await createFlag(tags);
-  await sleep(3000);
   const { cachedMatch } = await evaluator.batchEvaluation({
     context: {},
     input: { tags },
   });
+  const { flag: flag2 } = await createFlag(tags);
+  await sleep(3000);
 
   expect(cachedMatch(flag.key)).toBe(true);
   expect(cachedMatch(flag2.key)).toBe(false);
