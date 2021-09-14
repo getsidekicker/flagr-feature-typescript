@@ -29,6 +29,27 @@ const match = feature.match('flag'); // true if evaluated variant is 'on'
 const matchOff = feature.match('flag2', 'off'); // true evaluated variant is 'off'
 ```
 
+## Synchronous usage
+
+In the event that you can't use a promises (such as within React components), you can directly use the evaluator.
+
+```typescript
+// Invoked in a global context
+const evaluator = createEvaluator(config);
+const { cachedMatch, cachedEvaluation } = await evaluator.batchEvaluation({
+  context: {},
+  input: {
+    tags: ['local'],
+  },
+});
+
+// ...
+// Invoked in a synchronous context
+const isOn = cachedMatch('flag1');
+```
+
+NB: All flags are prefetched via the evaluator. This requires you to either supply the superset flags required via either `keys` or `tags`
+
 ## Context
 
 Context can be sent during evaluation
