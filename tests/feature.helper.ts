@@ -13,24 +13,29 @@ import {
   DistributionApi,
   PutDistributionsRequest,
   SetFlagEnabledRequest,
-} from "flagr-client";
-import { createFeature } from "../src/feature";
+} from 'flagr-client';
 
-const baseServer = new ServerConfiguration<{}>("http://flagr:18000/api/v1", {});
+import { createEvaluator } from '../src/evaluator';
+import { createFeature } from '../src/feature';
+
+const baseServer = new ServerConfiguration<{}>('http://flagr:18000/api/v1', {});
 const configuration = createConfiguration({ baseServer });
 
-interface Config {
+interface PartialConfig {
   tags?: string[];
   tagOperator?: EvaluationBatchRequestFlagTagsOperatorEnum;
 }
 
-export const featureFlag = (config?: Config) =>
-  createFeature({ ...(config || {}), flagrUrl: "http://flagr:18000" });
+export const testCreateEvaluator = (config?: PartialConfig) =>
+  createEvaluator({ ...(config || {}), flagrUrl: 'http://flagr:18000' });
+
+export const testCreateFeature = (config?: PartialConfig) =>
+  createFeature({ ...(config || {}), flagrUrl: 'http://flagr:18000' });
 
 export const randomString = () =>
   Math.random()
     .toString(36)
-    .replace(/[^a-z0-9]+/g, "");
+    .replace(/[^a-z0-9]+/g, '');
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -51,11 +56,11 @@ export const createFlag = async (tags: string[] = []) => {
   enableFlag.enabled = true;
   await flagApi.setFlagEnabled(flag.id, enableFlag);
   const variantRequest = new CreateVariantRequest();
-  variantRequest.key = "on";
+  variantRequest.key = 'on';
   const variant = await variantApi.createVariant(flag.id, variantRequest);
 
   const segmentRequest = new CreateSegmentRequest();
-  segmentRequest.description = "on";
+  segmentRequest.description = 'on';
   segmentRequest.rolloutPercent = 100;
   const segment = await segmentApi.createSegment(flag.id, segmentRequest);
 

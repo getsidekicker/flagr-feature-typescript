@@ -14,7 +14,7 @@ import {
   Tags,
 } from './types';
 
-export default class Evaluator {
+export class Evaluator {
   private api: EvaluationApi;
 
   constructor(public config: Config) {
@@ -28,7 +28,7 @@ export default class Evaluator {
     );
   }
 
-  async batchEvaluation(evaluationContext: EvaluationContext) {
+  private async flagrEvaluation(evaluationContext: EvaluationContext) {
     const results = new Map<string, FlagVariant>();
     const { input, context } = evaluationContext;
     const evaluationBatchRequest = new EvaluationBatchRequest();
@@ -60,8 +60,8 @@ export default class Evaluator {
     return results;
   }
 
-  async wrappedBatchEvaluation(evaluationContext: EvaluationContext) {
-    const results = await this.batchEvaluation(evaluationContext);
+  async batchEvaluation(evaluationContext: EvaluationContext) {
+    const results = await this.flagrEvaluation(evaluationContext);
     const cachedEvaluate = <T>(flag: string, callbacks: FlagCallbacks<T>) => {
       const { key, attachment } = results.get(flag) || {
         flag,
@@ -85,3 +85,5 @@ export default class Evaluator {
     };
   }
 }
+
+export const createEvaluator = (config: Config) => new Evaluator(config);

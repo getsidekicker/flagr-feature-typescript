@@ -1,4 +1,4 @@
-import Evaluator from './evaluator';
+import { createEvaluator, Evaluator } from './evaluator';
 import {
   Config,
   FlagCallbacks,
@@ -39,7 +39,7 @@ export class Feature {
       const { tags, tagOperator } = this.evaluator.config;
       Object.assign(
         this,
-        await this.evaluator.wrappedBatchEvaluation({
+        await this.evaluator.batchEvaluation({
           context: this.context,
           input: tags?.length
             ? <Tags>{ tags, tagOperator: tagOperator || 'ANY' }
@@ -54,6 +54,5 @@ export class Feature {
   }
 }
 
-export function createFeature(config: Config) {
-  return new Feature(new Evaluator(config));
-}
+export const createFeature = (config: Config) =>
+  new Feature(createEvaluator(config));
