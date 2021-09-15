@@ -32,7 +32,7 @@ export class Evaluator {
 
     if ('tags' in input) {
       evaluationBatchRequest.flagTags = input.tags;
-      evaluationBatchRequest.flagTagsOperator = input.tagOperator || 'ANY';
+      evaluationBatchRequest.flagTagsOperator = input?.tagOperator || 'ANY';
     } else {
       evaluationBatchRequest.flagKeys = input.flags;
     }
