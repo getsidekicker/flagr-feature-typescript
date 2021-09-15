@@ -5,14 +5,7 @@ import {
   EvaluationEntity,
   ServerConfiguration,
 } from 'flagr-client';
-import {
-  Config,
-  EvaluationContext,
-  FlagCallbacks,
-  Flags,
-  FlagVariant,
-  Tags,
-} from './types';
+import { Config, EvaluationContext, FlagCallbacks, FlagVariant } from './types';
 
 export class Evaluator {
   private api: EvaluationApi;
@@ -37,12 +30,11 @@ export class Evaluator {
     evaluationEntity.entityContext = context;
     evaluationBatchRequest.entities = [evaluationEntity];
 
-    if ((input as Tags).tags) {
-      evaluationBatchRequest.flagTags = (input as Tags).tags;
-      evaluationBatchRequest.flagTagsOperator =
-        (input as Tags).tagOperator || 'ANY';
+    if ('tags' in input) {
+      evaluationBatchRequest.flagTags = input.tags;
+      evaluationBatchRequest.flagTagsOperator = input.tagOperator || 'ANY';
     } else {
-      evaluationBatchRequest.flagKeys = (input as Flags).flags;
+      evaluationBatchRequest.flagKeys = input.flags;
     }
 
     const evaluationResult = await this.api.postEvaluationBatch(
@@ -62,7 +54,10 @@ export class Evaluator {
 
   async batchEvaluation(evaluationContext: EvaluationContext) {
     const results = await this.flagrEvaluation(evaluationContext);
-    const cachedEvaluate = <T>(flag: string, callbacks: FlagCallbacks<T>) => {
+    const cachedEvaluate = <T>(
+      flag: string,
+      callbacks: FlagCallbacks<T>
+    ): T | undefined => {
       const { key, attachment } = results.get(flag) || {
         flag,
         key: null,
@@ -77,11 +72,11 @@ export class Evaluator {
     return {
       results,
       cachedEvaluate,
-      cachedMatch: (flag: string, matchVariant: string = 'on') => {
-        const callbacks = { otherwise: () => false };
-        callbacks[matchVariant] = () => true;
-        return cachedEvaluate<boolean>(flag, callbacks);
-      },
+      cachedMatch: (flag: string, matchVariant: string = 'on') =>
+        cachedEvaluate<boolean>(flag, {
+          otherwise: () => false,
+          [matchVariant]: () => true,
+        }),
     };
   }
 }

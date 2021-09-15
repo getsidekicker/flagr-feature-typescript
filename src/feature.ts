@@ -29,7 +29,7 @@ export class Feature {
     return cachedMatch(flag, matchVariant);
   }
 
-  async evaluate<T>(flag: string, callbacks: FlagCallbacks<T>) {
+  async evaluate<T>(flag: string, callbacks: FlagCallbacks<T | undefined>) {
     const { cachedEvaluate } = await this.performEvaluation(flag);
     return cachedEvaluate(flag, callbacks);
   }
