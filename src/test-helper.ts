@@ -15,8 +15,8 @@ import {
   SetFlagEnabledRequest,
 } from 'flagr-client';
 
-import { createEvaluator } from '../src/evaluator';
-import { createFeature } from '../src/feature';
+import { createEvaluator } from './evaluator';
+import { createFeature } from './feature';
 
 const baseServer = new ServerConfiguration<{}>('http://flagr:18000/api/v1', {});
 const configuration = createConfiguration({ baseServer });
