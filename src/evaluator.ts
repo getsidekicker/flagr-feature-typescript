@@ -23,10 +23,11 @@ export class Evaluator {
 
   private async flagrEvaluation(evaluationContext: EvaluationContext) {
     const results = new Map<string, FlagVariant>();
-    const { input, context } = evaluationContext;
+    const { input, context, id } = evaluationContext;
     const evaluationBatchRequest = new EvaluationBatchRequest();
     const evaluationEntity = new EvaluationEntity();
 
+    evaluationEntity.entityID = id;
     evaluationEntity.entityContext = context;
     evaluationBatchRequest.entities = [evaluationEntity];
 

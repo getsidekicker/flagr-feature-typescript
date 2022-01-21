@@ -9,6 +9,8 @@ import {
 } from './types';
 
 export class Feature {
+  private id: string | undefined;
+
   private context: JsonObject = {};
 
   private results = new Map<string, FlagVariant>();
@@ -19,8 +21,17 @@ export class Feature {
 
   constructor(private evaluator: Evaluator) {}
 
+  setId(id: string) {
+    this.id = id;
+    this.reset();
+  }
+
   setContext(context: JsonObject) {
     this.context = context;
+    this.reset();
+  }
+
+  reset() {
     this.results = new Map<string, FlagVariant>();
   }
 
@@ -40,6 +51,7 @@ export class Feature {
       Object.assign(
         this,
         await this.evaluator.batchEvaluation({
+          id: this.id,
           context: this.context,
           input: tags?.length
             ? <Tags>{ tags, tagOperator: tagOperator || 'ANY' }

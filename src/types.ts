@@ -33,6 +33,7 @@ export interface Flags {
 export interface EvaluationContext {
   context: JsonObject;
   input: Flags | Tags;
+  id?: string;
 }
 
 export interface Config {
