@@ -39,7 +39,10 @@ export const randomString = () =>
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export const createFlag = async (tags: string[] = []) => {
+export const createFlag = async (
+  tags: string[] = [],
+  percent: number = 100
+) => {
   const flagApi = new FlagApi(configuration);
   const tagApi = new TagApi(configuration);
   const variantApi = new VariantApi(configuration);
@@ -59,6 +62,9 @@ export const createFlag = async (tags: string[] = []) => {
   variantRequest.key = 'on';
   const variant = await variantApi.createVariant(flag.id, variantRequest);
 
+  variantRequest.key = 'off';
+  const variantOff = await variantApi.createVariant(flag.id, variantRequest);
+
   const segmentRequest = new CreateSegmentRequest();
   segmentRequest.description = 'on';
   segmentRequest.rolloutPercent = 100;
@@ -66,8 +72,17 @@ export const createFlag = async (tags: string[] = []) => {
 
   const distributionRequest = new PutDistributionsRequest();
   distributionRequest.distributions = [
-    { percent: 100, variantID: variant.id, variantKey: variant.key },
+    { percent, variantID: variant.id, variantKey: variant.key },
   ];
+
+  if (percent < 100) {
+    distributionRequest.distributions.push({
+      percent: 100 - percent,
+      variantID: variantOff.id,
+      variantKey: variantOff.key,
+    });
+  }
+
   const distribution = await distributionApi.putDistributions(
     flag.id,
     segment.id,

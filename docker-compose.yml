@@ -27,7 +27,7 @@ services:
       - 18000:18000
 
   db:
-    image: mysql:8.0
+    image: mariadb:10.7
     environment:
       MYSQL_ROOT_PASSWORD: flagr
       MYSQL_DATABASE: flagr
