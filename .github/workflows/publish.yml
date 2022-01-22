@@ -1,0 +1,27 @@
+name: Publish Package to npmjs
+on:
+  release:
+    types: [created]
+  pull_request:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: fregante/setup-git-user@v1
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.x'
+          registry-url: 'https://registry.npmjs.org'
+      - name: Get branch meta
+        id: meta
+        run: |
+          echo "::set-output name=sha_short::$(git rev-parse --short HEAD | sed -e 's/^0/o/g')"
+          echo "::set-output name=current_version::$(node -p -e "require('./package.json').version")"
+      - run: npm ci
+      - run: npm run build
+      - run: npm version prerelease --preid=${{ steps.meta.outputs.sha_short }}
+        if: github.ref != 'refs/heads/main' 
+      - run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
