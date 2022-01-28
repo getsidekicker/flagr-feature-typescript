@@ -8,7 +8,7 @@ export type JsonObject = {
 
 export interface FlagCallbacks<T> {
   // eslint-disable-next-line no-unused-vars
-  [key: string]: (attachment?: JsonObject) => T;
+  [key: string]: (attachment: JsonObject | undefined, key: string) => T;
 }
 
 export type JsonArray = Array<Json>;
@@ -16,7 +16,7 @@ export type JsonArray = Array<Json>;
 export interface FlagVariant {
   flag: string;
   key: string | null;
-  attachment: JsonObject | null;
+  attachment: JsonObject;
 }
 
 export type NonEmptyArray<T> = [T, ...T[]];
