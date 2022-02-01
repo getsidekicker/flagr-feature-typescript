@@ -18,10 +18,15 @@ jobs:
         run: |
           echo "::set-output name=sha_short::$(git rev-parse --short HEAD | sed -e 's/^0/o/g')"
           echo "::set-output name=current_version::$(node -p -e "require('./package.json').version")"
+          echo ::set-output name=tag::${GITHUB_REF#refs/tags/}
       - run: npm ci
       - run: npm run build
       - run: npm version prerelease --preid=${{ steps.meta.outputs.sha_short }}
-        if: github.ref != 'refs/heads/main' 
+        if: ${{ github.event_name == 'pull_request' }}
+      - run: npm version ${{ steps.meta.outputs.tag }}
+        if: ${{ github.event_name != 'pull_request' }}
+      - run: git push
+        if: ${{ github.event_name != 'pull_request' }}
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
