@@ -22,13 +22,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm version prerelease --preid=${{ steps.meta.outputs.sha_short }}
-        if: steps.meta.outputs.tag == ''
+        if: ${{ github.event_name == 'pull_request' }}
       - run: npm version ${{ steps.meta.outputs.tag }}
-        if: steps.meta.outputs.tag != ''
+        if: ${{ github.event_name != 'pull_request' }}
       - run: npm version ${{ steps.meta.outputs.tag }}
-        if: steps.meta.outputs.tag != ''
+        if: ${{ github.event_name != 'pull_request' }}
       - run: git push
-        if: steps.meta.outputs.tag != ''
+        if: ${{ github.event_name != 'pull_request' }}
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
