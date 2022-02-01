@@ -25,7 +25,7 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
       - run: npm version ${{ steps.meta.outputs.tag }}
         if: ${{ github.event_name != 'pull_request' }}
-      - run: git push
+      - run: git push origin HEAD:main
         if: ${{ github.event_name != 'pull_request' }}
       - run: npm publish
         env:
