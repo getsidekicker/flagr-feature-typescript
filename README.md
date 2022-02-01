@@ -37,7 +37,8 @@ In the event that you can't use promises (such as within React components), you 
 // Invoked in a global context
 const evaluator = createEvaluator(config);
 const { cachedMatch, cachedEvaluation } = await evaluator.batchEvaluation({
-  context: {},
+  id: 'user_123',
+  context: {}
   input: {
     tags: ['local'],
   },

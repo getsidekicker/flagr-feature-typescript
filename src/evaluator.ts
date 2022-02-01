@@ -5,6 +5,7 @@ import {
   EvaluationEntity,
   ServerConfiguration,
 } from 'flagr-client';
+
 import { Config, EvaluationContext, FlagCallbacks, FlagVariant } from './types';
 
 export class Evaluator {
@@ -23,10 +24,11 @@ export class Evaluator {
 
   private async flagrEvaluation(evaluationContext: EvaluationContext) {
     const results = new Map<string, FlagVariant>();
-    const { input, context } = evaluationContext;
+    const { input, context, id } = evaluationContext;
     const evaluationBatchRequest = new EvaluationBatchRequest();
     const evaluationEntity = new EvaluationEntity();
 
+    evaluationEntity.entityID = id;
     evaluationEntity.entityContext = context;
     evaluationBatchRequest.entities = [evaluationEntity];
 
@@ -66,12 +68,20 @@ export class Evaluator {
       const callback =
         callbacks[key] || callbacks.otherwise || (() => undefined);
 
-      return callback(attachment);
+      return callback(attachment, key);
     };
 
     return {
       results,
       cachedEvaluate,
+      cachedVariant: (flag: string) =>
+        cachedEvaluate<FlagVariant>(flag, {
+          otherwise: (attachment, key) => ({
+            flag,
+            attachment,
+            key,
+          }),
+        }),
       cachedMatch: (flag: string, matchVariant: string = 'on') =>
         cachedEvaluate<boolean>(flag, {
           otherwise: () => false,
