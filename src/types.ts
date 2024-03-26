@@ -15,8 +15,8 @@ export type JsonArray = Array<Json>;
 
 export interface FlagVariant {
   flag: string;
-  key: string | null;
-  attachment: JsonObject;
+  key: string | undefined;
+  attachment: JsonObject | undefined;
 }
 
 export type NonEmptyArray<T> = [T, ...T[]];

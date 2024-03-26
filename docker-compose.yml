@@ -9,42 +9,16 @@ services:
       dockerfile: ops/docker/Dockerfile
     environment:
       FEATURE_FLAGR_URL: 'http://flagr:18000'
-      DB_HOST: 'db'
     volumes:
       - .:/app:cached
     depends_on:
-      - db
       - flagr
 
   flagr:
     image: ghcr.io/openflagr/flagr
     environment:
-      FLAGR_DB_DBDRIVER: mysql
-      FLAGR_DB_DBCONNECTIONSTR: flagr:flagr@tcp(db:3306)/flagr?parseTime=true
-    depends_on:
-      - db
+      FLAGR_DB_DBDRIVER: sqlite3
+      FLAGR_DB_DBCONNECTIONSTR: "/tmp/flagr.db"
     ports:
       - 18000:18000
 
-  db:
-    image: mariadb:10.7
-    environment:
-      MYSQL_ROOT_PASSWORD: flagr
-      MYSQL_DATABASE: flagr
-      MYSQL_USER: flagr
-      MYSQL_PASSWORD: flagr
-    ports:
-      - 3306
-    command: >
-      mysqld --sql_mode="NO_ENGINE_SUBSTITUTION"
-    tmpfs:
-      - /tmp/:rw,noexec,nosuid,size=50m
-    volumes:
-      - mysqldata_tmpfs:/var/lib/mysql
-
-volumes:
-  mysqldata_tmpfs:
-    driver: local
-    driver_opts:
-      type: tmpfs
-      device: tmpfs
