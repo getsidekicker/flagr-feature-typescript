@@ -62,8 +62,8 @@ export class Evaluator {
     ): T | undefined => {
       const { key, attachment } = results.get(flag) || {
         flag,
-        key: null,
-        attachment: null,
+        key: undefined,
+        attachment: undefined,
       };
       const callback =
         callbacks[key] || callbacks.otherwise || (() => undefined);

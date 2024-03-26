@@ -60,4 +60,35 @@ describe('should not match', () => {
     expect(refreshCachedMatch(flag.key)).toBe(true);
     expect(refreshCachedMatch(flag2.key)).toBe(true);
   });
+
+  it('should have undefined key and attachment when variant does not exist', async () => {
+    const evaluator = testCreateEvaluator();
+    const tags: NonEmptyArray<string> = [randomString()];
+    await createFlag(tags);
+    await sleep(3000);
+    const { cachedVariant } = await evaluator.batchEvaluation({
+      context: {},
+      input: { tags },
+    });
+
+    const nonExistentString = randomString();
+    expect(cachedVariant(nonExistentString).flag).toBe(nonExistentString);
+    expect(cachedVariant(nonExistentString).key).toBe(undefined);
+    expect(cachedVariant(nonExistentString).attachment).toBe(undefined);
+  });
+
+  it('should have undefined key and attachment when no variant available', async () => {
+    const evaluator = testCreateEvaluator();
+    const tags: NonEmptyArray<string> = [randomString()];
+    await createFlag(tags, 0);
+    await sleep(3000);
+    const { results } = await evaluator.batchEvaluation({
+      context: {},
+      input: { tags },
+    });
+
+    const variant = results.get(tags[0]);
+    expect(variant?.key).toBe(undefined);
+    expect(variant?.attachment).toBe(undefined);
+  });
 });
